@@ -1,0 +1,42 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           music
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/AugmenTab/music#readme>
+homepage:       https://github.com/AugmenTab/music#readme
+bug-reports:    https://github.com/AugmenTab/music/issues
+author:         Tyler Baum
+maintainer:     tyler.baum@protonmail.com
+copyright:      2023 Tyler Baum
+build-type:     Simple
+extra-source-files:
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/AugmenTab/music
+
+library
+  exposed-modules:
+      Data.Music
+  other-modules:
+      Paths_music
+  hs-source-dirs:
+      src
+  default-extensions:
+      DeriveDataTypeable
+      DerivingStrategies
+      FlexibleContexts
+      GeneralizedNewtypeDeriving
+      MultiParamTypeClasses
+      NoImplicitPrelude
+      OverloadedStrings
+  ghc-options: -j -Werror -Wall -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints -Wmissing-deriving-strategies -Wmissing-export-lists -fno-warn-orphans
+  build-depends:
+      base >=4.7 && <5
+    , flipstone-prelude
+  default-language: Haskell2010

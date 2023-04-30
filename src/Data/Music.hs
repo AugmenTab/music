@@ -1,0 +1,4 @@
+module Data.Music
+  (
+  ) where
+

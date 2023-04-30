@@ -1,0 +1,47 @@
+name:                music
+version:             0.1.0.0
+github:              "AugmenTab/music"
+author:              "Tyler Baum"
+maintainer:          "tyler.baum@protonmail.com"
+copyright:           "2023 Tyler Baum"
+
+extra-source-files:
+- README.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/AugmenTab/music#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- flipstone-prelude
+
+default-extensions:
+  - DeriveDataTypeable
+  - DerivingStrategies
+  - FlexibleContexts
+  - GeneralizedNewtypeDeriving
+  - MultiParamTypeClasses
+  - NoImplicitPrelude
+  - OverloadedStrings
+
+ghc-options:
+- -j
+- -Werror
+- -Wall
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wpartial-fields
+- -Wredundant-constraints
+- -Wmissing-deriving-strategies
+- -Wmissing-export-lists
+- -fno-warn-orphans
+
+library:
+  source-dirs: src
