@@ -23,6 +23,7 @@ source-repository head
 library
   exposed-modules:
       Data.Music
+      Data.Music.Note
   other-modules:
       Paths_music
   hs-source-dirs:
