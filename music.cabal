@@ -23,6 +23,7 @@ source-repository head
 library
   exposed-modules:
       Data.Music
+      Data.Music.Interval
       Data.Music.Note
   other-modules:
       Paths_music
@@ -39,5 +40,7 @@ library
   ghc-options: -j -Werror -Wall -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints -Wmissing-deriving-strategies -Wmissing-export-lists -fno-warn-orphans
   build-depends:
       base >=4.7 && <5
+    , containers
     , flipstone-prelude
+    , text
   default-language: Haskell2010
