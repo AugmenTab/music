@@ -3,5 +3,6 @@ module Data.Music
   ) where
 
 import Data.Music.Interval as X
+import Data.Music.Invertible as X
 import Data.Music.Note as X
 import Data.Music.Scale as X

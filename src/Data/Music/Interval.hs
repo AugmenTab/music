@@ -5,10 +5,8 @@ module Data.Music.Interval
   , intervalFromHalfSteps
   , intervalToHalfSteps
   , intervalToText
-  , invertInterval
 
   , Quality(..)
-  , invertQuality
 
   , Size
   , mkIntervalSize
@@ -59,6 +57,7 @@ module Data.Music.Interval
   ) where
 
 import           Flipstone.Prelude
+import           Data.Music.Invertible (Invertible(..))
 
 import qualified Data.Map as Map
 import qualified Data.Set as Set
@@ -71,6 +70,9 @@ data Interval = Interval Quality Size
 instance Eq Interval where
   interval1 == interval2 =
     intervalToHalfSteps interval1 == intervalToHalfSteps interval2
+
+instance Invertible Interval where
+  invert (Interval quality size) = Interval (invert quality) $ 9 - size
 
 instance Ord Interval where
   compare interval1@(Interval q1 s1) interval2@(Interval q2 s2) =
@@ -213,10 +215,6 @@ intervalToHalfSteps interval =
     Interval Diminished 8 -> HalfSteps 11
     Interval Perfect    8 -> HalfSteps 12
 
-invertInterval :: Interval -> Interval
-invertInterval (Interval quality size) =
-  Interval (invertQuality quality) $ 9 - size
-
 data Quality
   = Diminished
   | Minor
@@ -224,6 +222,9 @@ data Quality
   | Major
   | Augmented
   deriving stock (Bounded, Enum, Eq, Ord)
+
+instance Invertible Quality where
+  invert = toEnum . (fromEnum (maxBound :: Quality) -) . fromEnum
 
 instance Show Quality where
   show Diminished = "d"
@@ -244,9 +245,6 @@ mkIntervalSize num
   | num == 0  = Left $ "Cannot make Interval of Size 0."
   | num >= 9  = Right $ fromIntegral $ mod num 7
   | otherwise = Right $ fromIntegral num
-
-invertQuality :: Quality -> Quality
-invertQuality = toEnum . (fromEnum (maxBound :: Quality) -) . fromEnum
 
 -- Unison
 unison :: Interval

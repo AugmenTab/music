@@ -4,7 +4,6 @@ module Data.Music.Scale
   , scaleFromIntervals
   , scaleToIntervals
   , scaleToText
-  , invertScale
 
   -- Scales
   , major
@@ -14,6 +13,7 @@ module Data.Music.Scale
 
 import           Flipstone.Prelude
 import qualified Data.Music.Interval as I
+import           Data.Music.Invertible (Invertible(..))
 
 import qualified Data.Foldable as F
 import qualified Data.FixedList as FL
@@ -42,6 +42,22 @@ instance Eq Scale where
   scale1 == scale2 =
     let toHalfSteps = fmap I.intervalToHalfSteps . scaleToIntervals
      in toHalfSteps scale1 == toHalfSteps scale2
+
+instance Invertible Scale where
+  invert scale =
+    let invertIntervals is = invert <$> FL.reverse is
+     in case scale of
+          Ditonic     intervals -> Ditonic     $ invertIntervals intervals
+          Tritonic    intervals -> Tritonic    $ invertIntervals intervals
+          Tetratonic  intervals -> Tetratonic  $ invertIntervals intervals
+          Pentatonic  intervals -> Pentatonic  $ invertIntervals intervals
+          Hexatonic   intervals -> Hexatonic   $ invertIntervals intervals
+          Heptatonic  intervals -> Heptatonic  $ invertIntervals intervals
+          Octatonic   intervals -> Octatonic   $ invertIntervals intervals
+          Nonatonic   intervals -> Nonatonic   $ invertIntervals intervals
+          Decatonic   intervals -> Decatonic   $ invertIntervals intervals
+          Undecatonic intervals -> Undecatonic $ invertIntervals intervals
+          Chromatic   intervals -> Chromatic   $ invertIntervals intervals
 
 instance Show Scale where
   show = T.unpack . scaleToText
@@ -99,19 +115,6 @@ scaleToText scale =
         Decatonic   _ -> "Decatonic "   <> intervals
         Undecatonic _ -> "Undecatonic " <> intervals
         Chromatic   _ -> "Chromatic "   <> intervals
-
-invertScale :: Scale -> Scale
-invertScale (Ditonic     intervals) = Ditonic     $ I.invertInterval <$> FL.reverse intervals
-invertScale (Tritonic    intervals) = Tritonic    $ I.invertInterval <$> FL.reverse intervals
-invertScale (Tetratonic  intervals) = Tetratonic  $ I.invertInterval <$> FL.reverse intervals
-invertScale (Pentatonic  intervals) = Pentatonic  $ I.invertInterval <$> FL.reverse intervals
-invertScale (Hexatonic   intervals) = Hexatonic   $ I.invertInterval <$> FL.reverse intervals
-invertScale (Heptatonic  intervals) = Heptatonic  $ I.invertInterval <$> FL.reverse intervals
-invertScale (Octatonic   intervals) = Octatonic   $ I.invertInterval <$> FL.reverse intervals
-invertScale (Nonatonic   intervals) = Nonatonic   $ I.invertInterval <$> FL.reverse intervals
-invertScale (Decatonic   intervals) = Decatonic   $ I.invertInterval <$> FL.reverse intervals
-invertScale (Undecatonic intervals) = Undecatonic $ I.invertInterval <$> FL.reverse intervals
-invertScale (Chromatic   intervals) = Chromatic   $ I.invertInterval <$> FL.reverse intervals
 
 --
 -- Common Scales as Constants
