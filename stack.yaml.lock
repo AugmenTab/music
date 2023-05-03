@@ -5,6 +5,17 @@
 
 packages:
 - completed:
+    commit: dd6c48d1b7c67925da88e96477813cbf81e81ae6
+    git: https://github.com/jvranish/FixedList
+    name: fixed-list
+    pantry-tree:
+      sha256: 8bb6b181366b62e56c06519eb93291771b96eb9593aa67aaeeede7df14b7747d
+      size: 319
+    version: 0.1.6
+  original:
+    commit: dd6c48d1b7c67925da88e96477813cbf81e81ae6
+    git: https://github.com/jvranish/FixedList
+- completed:
     commit: b516a71f960149ff6cec163e2ee0c61478e913e0
     git: https://github.com/flipstone/flipstone-prelude.git
     name: flipstone-prelude

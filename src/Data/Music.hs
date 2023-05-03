@@ -4,3 +4,4 @@ module Data.Music
 
 import Data.Music.Interval as X
 import Data.Music.Note as X
+import Data.Music.Scale as X

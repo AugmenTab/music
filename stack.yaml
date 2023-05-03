@@ -5,5 +5,7 @@ packages:
 - .
 
 extra-deps:
+- git: https://github.com/jvranish/FixedList
+  commit: dd6c48d1b7c67925da88e96477813cbf81e81ae6
 - git: https://github.com/flipstone/flipstone-prelude.git
   commit: b516a71f960149ff6cec163e2ee0c61478e913e0
