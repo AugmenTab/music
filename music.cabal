@@ -24,6 +24,7 @@ library
   exposed-modules:
       Data.Music
       Data.Music.Interval
+      Data.Music.Invertible
       Data.Music.Note
       Data.Music.Scale
   other-modules:

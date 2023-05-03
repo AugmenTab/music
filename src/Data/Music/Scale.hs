@@ -4,11 +4,6 @@ module Data.Music.Scale
   , scaleFromIntervals
   , scaleToIntervals
   , scaleToText
-
-  -- Scales
-  , major
-  , minor
-  , chromatic
   ) where
 
 import           Flipstone.Prelude
@@ -115,35 +110,3 @@ scaleToText scale =
         Decatonic   _ -> "Decatonic "   <> intervals
         Undecatonic _ -> "Undecatonic " <> intervals
         Chromatic   _ -> "Chromatic "   <> intervals
-
---
--- Common Scales as Constants
---
-major :: Scale
-major =
-  Heptatonic
-    $ FL.fromFoldable'
-    $ [ I.maj_2, I.maj_3, I.per_4, I.per_5, I.maj_6, I.maj_7 ]
-
-minor :: Scale
-minor =
-  Heptatonic
-    $ FL.fromFoldable'
-    $ [ I.maj_2, I.min_3, I.per_4, I.per_5, I.min_6, I.min_7 ]
-
-chromatic :: Scale
-chromatic =
-  Chromatic
-    $ FL.fromFoldable'
-        [ I.min_2
-        , I.maj_2
-        , I.min_3
-        , I.maj_3
-        , I.per_4
-        , I.aug_4
-        , I.per_5
-        , I.min_6
-        , I.maj_6
-        , I.min_7
-        , I.maj_7
-        ]
