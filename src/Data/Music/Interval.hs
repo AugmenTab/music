@@ -69,7 +69,8 @@ import           Text.Show (Show(..))
 data Interval = Interval Quality Size
 
 instance Eq Interval where
-  (Interval q1 s1) == (Interval q2 s2) = q1 == q2 && s1 == s2
+  interval1 == interval2 =
+    intervalToHalfSteps interval1 == intervalToHalfSteps interval2
 
 instance Ord Interval where
   compare interval1@(Interval q1 s1) interval2@(Interval q2 s2) =
@@ -183,33 +184,34 @@ intervalFromHalfSteps size steps =
 --
 -- TODO: Perhaps modify Interval to be less flexible?
 intervalToHalfSteps :: Interval -> HalfSteps
-intervalToHalfSteps interval
-  | interval == per_1 = HalfSteps  0
-  | interval == aug_1 = HalfSteps  1
-  | interval == dim_2 = HalfSteps  0
-  | interval == min_2 = HalfSteps  1
-  | interval == maj_2 = HalfSteps  2
-  | interval == aug_2 = HalfSteps  3
-  | interval == dim_3 = HalfSteps  2
-  | interval == min_3 = HalfSteps  3
-  | interval == maj_3 = HalfSteps  4
-  | interval == aug_3 = HalfSteps  5
-  | interval == dim_4 = HalfSteps  4
-  | interval == per_4 = HalfSteps  5
-  | interval == aug_4 = HalfSteps  6
-  | interval == dim_5 = HalfSteps  6
-  | interval == per_5 = HalfSteps  7
-  | interval == aug_5 = HalfSteps  8
-  | interval == dim_6 = HalfSteps  7
-  | interval == min_6 = HalfSteps  8
-  | interval == maj_6 = HalfSteps  9
-  | interval == aug_6 = HalfSteps 10
-  | interval == dim_7 = HalfSteps  9
-  | interval == min_7 = HalfSteps 10
-  | interval == maj_7 = HalfSteps 11
-  | interval == aug_7 = HalfSteps 12
-  | interval == dim_8 = HalfSteps 11
-  | interval == per_8 = HalfSteps 12
+intervalToHalfSteps interval =
+  case interval of
+    Interval Perfect    1 -> HalfSteps  0
+    Interval Augmented  1 -> HalfSteps  1
+    Interval Diminished 2 -> HalfSteps  0
+    Interval Minor      2 -> HalfSteps  1
+    Interval Major      2 -> HalfSteps  2
+    Interval Augmented  2 -> HalfSteps  3
+    Interval Diminished 3 -> HalfSteps  2
+    Interval Minor      3 -> HalfSteps  3
+    Interval Major      3 -> HalfSteps  4
+    Interval Augmented  3 -> HalfSteps  5
+    Interval Diminished 4 -> HalfSteps  4
+    Interval Perfect    4 -> HalfSteps  5
+    Interval Augmented  4 -> HalfSteps  6
+    Interval Diminished 5 -> HalfSteps  6
+    Interval Perfect    5 -> HalfSteps  7
+    Interval Augmented  5 -> HalfSteps  8
+    Interval Diminished 6 -> HalfSteps  7
+    Interval Minor      6 -> HalfSteps  8
+    Interval Major      6 -> HalfSteps  9
+    Interval Augmented  6 -> HalfSteps 10
+    Interval Diminished 7 -> HalfSteps  9
+    Interval Minor      7 -> HalfSteps 10
+    Interval Major      7 -> HalfSteps 11
+    Interval Augmented  7 -> HalfSteps 12
+    Interval Diminished 8 -> HalfSteps 11
+    Interval Perfect    8 -> HalfSteps 12
 
 invertInterval :: Interval -> Interval
 invertInterval (Interval quality size) =
