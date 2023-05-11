@@ -1,5 +1,7 @@
 module Data.Music.Note
   ( Accidental(..)
+  , flatten, sharpen
+  , doubleFlat, flat, natural, sharp, doubleSharp
 
   , Note(..)
   , Tonic
@@ -78,3 +80,38 @@ instance Show Accidental where
   show Flat        = "♭"
   show Sharp       = "♯"
   show DoubleSharp = "𝄪"
+
+{-| This flattens a provided note without changing its pitch class. It will
+   return the note unchanged if it is already double-flat.
+-}
+flatten :: Note -> Note
+flatten (Note pc acc) =
+  case acc of
+    DoubleFlat -> Note pc DoubleFlat
+    Natural    -> Note pc Flat
+    _          -> Note pc $ toEnum $ fromEnum acc - 1
+
+{-| This sharpens a provided note without changing its pitch class. It will
+   return the note unchanged if it is already double-sharp.
+-}
+sharpen :: Note -> Note
+sharpen (Note pc acc) =
+  case acc of
+    DoubleSharp  -> Note pc DoubleSharp
+    NoAccidental -> Note pc Sharp
+    _            -> Note pc $ toEnum $ fromEnum acc + 1
+
+doubleFlat :: Note -> Note
+doubleFlat (Note pc _) = Note pc DoubleFlat
+
+flat :: Note -> Note
+flat (Note pc _) = Note pc Flat
+
+natural :: Note -> Note
+natural (Note pc _) = Note pc Natural
+
+sharp :: Note -> Note
+sharp (Note pc _) = Note pc Sharp
+
+doubleSharp :: Note -> Note
+doubleSharp (Note pc _) = Note pc DoubleSharp

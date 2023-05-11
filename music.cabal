@@ -27,6 +27,7 @@ library
       Data.Music.Invertible
       Data.Music.Note
       Data.Music.Scale
+      Data.Music.Scales
   other-modules:
       Paths_music
   hs-source-dirs:
