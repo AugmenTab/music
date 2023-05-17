@@ -1,117 +1,61 @@
 module Data.Music.Note
-  ( Accidental(..)
-  , flatten, sharpen
-  , doubleFlat, flat, natural, sharp, doubleSharp
+  ( Note(..)
 
-  , Note(..)
-  , Tonic
-  , Supertonic
-  , Mediant
-  , Subdominant
-  , Dominant
-  , Submediant
-  , Subtonic
-  , LeadingTone
+  , Octave(..)
 
-  , PitchClass(..)
+  , Duration
+  , dot, dotted
+  , whole, half, quarter, eighth, sixteenth
   ) where
 
 import           Flipstone.Prelude
+import           Data.Music.Pitch (Pitch)
 
-import qualified Data.List as L
+import           Data.Ratio (denominator, numerator, (%))
+import           Numeric.Natural (Natural)
 import           Text.Show (Show(..))
 
-data Note = Note PitchClass Accidental
-
-instance Eq Note where
-  (Note pc1 a1) == (Note pc2 a2) =
-    L.or [ pc1 == pc2 && a1 == a2
-         -- TODO: Add enharmonic equivalence
-         ]
+data Note
+  = Note Duration Pitch Octave
+  | Rest Duration
+  deriving stock (Eq)
 
 instance Show Note where
-  show (Note pitchClass accidental) =
-    "Note " <> show pitchClass <> show accidental
+  show (Note d p o) = "Note " <> show d <> " " <> show p <> show o
+  show (Rest d)     = "Rest " <> show d
 
--- These type synonyms are conveniences for using scale degree names.
-type Tonic       = Note
-type Supertonic  = Note
-type Mediant     = Note
-type Subdominant = Note
-type Dominant    = Note
-type Submediant  = Note
+newtype Octave = Octave Natural
+  deriving newtype (Enum, Eq, Show)
 
--- TODO: I'm not exactly sure which of these to use if this gets expanded into
--- an ADT...
-type Subtonic    = Note
-type LeadingTone = Note
+instance Bounded Octave where
+  minBound = Octave 0
+  maxBound = Octave 8
 
-data PitchClass
-  = A
-  | B
-  | C
-  | D
-  | E
-  | F
-  | G
-  deriving stock (Bounded, Enum, Eq, Ord, Show)
+newtype Duration = Duration (Ratio Natural)
+  deriving newtype (Eq)
 
-data Accidental
-  = DoubleFlat
-  | Flat
-  | NoAccidental
-  | Natural
-  | Sharp
-  | DoubleSharp
-  deriving stock (Bounded, Enum, Eq, Ord)
+instance Show Duration where
+  show (Duration d) =
+    "Duration " <> show (numerator d) <> "/" <> show (denominator d)
 
-instance Show Accidental where
-  -- This shows the natural note without an accidental mark, which is the normal
-  -- way of writing an undecorated note.
-  show NoAccidental = ""
+dot :: Note -> Note
+dot (Note d p c) = Note (dotted d) p c
+dot (Rest d)     = Rest (dotted d)
 
-  -- This is a true "natural" note, with the proper accidental shown. This is
-  -- important to differentiate explicitly natural notes in "playing outside"
-  -- contexts.
-  show Natural = "♮"
+dotted :: Duration -> Duration
+dotted (Duration d) = Duration $ d * (3 % 2)
 
-  -- These are common accidentals that are always represented as intended.
-  show DoubleFlat  = "𝄫"
-  show Flat        = "♭"
-  show Sharp       = "♯"
-  show DoubleSharp = "𝄪"
+whole :: Duration
+whole = Duration $ 1 % 1
 
-{-| This flattens a provided note without changing its pitch class. It will
-   return the note unchanged if it is already double-flat.
--}
-flatten :: Note -> Note
-flatten (Note pc acc) =
-  case acc of
-    DoubleFlat -> Note pc DoubleFlat
-    Natural    -> Note pc Flat
-    _          -> Note pc $ toEnum $ fromEnum acc - 1
+half :: Duration
+half = Duration $ 1 % 2
 
-{-| This sharpens a provided note without changing its pitch class. It will
-   return the note unchanged if it is already double-sharp.
--}
-sharpen :: Note -> Note
-sharpen (Note pc acc) =
-  case acc of
-    DoubleSharp  -> Note pc DoubleSharp
-    NoAccidental -> Note pc Sharp
-    _            -> Note pc $ toEnum $ fromEnum acc + 1
+quarter :: Duration
+quarter = Duration $ 1 % 4
 
-doubleFlat :: Note -> Note
-doubleFlat (Note pc _) = Note pc DoubleFlat
+eighth :: Duration
+eighth = Duration $ 1 % 8
 
-flat :: Note -> Note
-flat (Note pc _) = Note pc Flat
-
-natural :: Note -> Note
-natural (Note pc _) = Note pc Natural
-
-sharp :: Note -> Note
-sharp (Note pc _) = Note pc Sharp
-
-doubleSharp :: Note -> Note
-doubleSharp (Note pc _) = Note pc DoubleSharp
+sixteenth :: Duration
+sixteenth = Duration $ 1 % 16

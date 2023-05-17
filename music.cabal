@@ -26,6 +26,7 @@ library
       Data.Music.Interval
       Data.Music.Invertible
       Data.Music.Note
+      Data.Music.Pitch
       Data.Music.Scale
       Data.Music.Scales
   other-modules:
