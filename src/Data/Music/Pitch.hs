@@ -30,6 +30,10 @@ instance Eq Pitch where
          , pitchToInt pitch1 == pitchToInt pitch2
          ]
 
+instance Ord Pitch where
+  compare pitch1@(Pitch pc1 _) pitch2@(Pitch pc2 _) =
+    pitchToInt pitch1 `compare` pitchToInt pitch2 <> compare pc1 pc2
+
 instance Show Pitch where
   show (Pitch pitchClass accidental) =
     "Pitch " <> show pitchClass <> show accidental
