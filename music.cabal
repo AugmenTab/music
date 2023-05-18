@@ -29,6 +29,7 @@ library
       Data.Music.Pitch
       Data.Music.Scale
       Data.Music.Scales
+      Data.Music.Time
   other-modules:
       Paths_music
   hs-source-dirs:

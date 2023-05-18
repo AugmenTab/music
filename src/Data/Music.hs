@@ -8,3 +8,4 @@ import Data.Music.Note as X
 import Data.Music.Pitch as X
 import Data.Music.Scale as X
 import Data.Music.Scales as X
+import Data.Music.Time as X
