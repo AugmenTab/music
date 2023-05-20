@@ -272,7 +272,7 @@ instance Bounded Size where
 mkIntervalSize :: Integral a => a -> Either T.Text Size
 mkIntervalSize num
   | num <= 0  = Left "Intervals must be at least Size 1."
-  | num >= 9  = Right $ fromIntegral $ mod num 7
+  | num >= 9  = Right . fromIntegral $ mod num 7
   | otherwise = Right $ fromIntegral num
 
 -- Unison
