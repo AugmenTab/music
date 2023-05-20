@@ -7,6 +7,7 @@ module Data.Music.Interval
   , intervalToText
 
   , Quality(..)
+  , qualityToText
 
   , Size
   , mkIntervalSize
@@ -65,6 +66,10 @@ import qualified Data.Text as T
 import           Numeric.Natural (Natural)
 import           Text.Show (Show(..))
 
+-- | An Interval is a representation of the space between two notes. It has two
+-- elements: a Quality, which determines whether the interval is Major, Minor,
+-- Augmented, Diminished, or Perfect; and a Size, which is the number of note
+-- letters between the two notes (A to B is a second, D to G is a fourth, etc).
 data Interval = Interval Quality Size
 
 instance Eq Interval where
@@ -85,13 +90,22 @@ instance Ord Interval where
 instance Show Interval where
   show (Interval quality size) = show quality <> show size
 
+-- | Constructs an Interval from a given quality and interval. This can fail if
+-- an impossible interval combination is provided.
+--
+-- > mkInterval Major 2 == Right Interval M2
+-- > mkInterval Perfect 3 == Left "Invalid interval P3."
+--
 mkInterval :: Integral a => Quality -> a -> Either T.Text Interval
 mkInterval quality num = do
   size <- mkIntervalSize num
 
   let isPerfect = Set.member size perfectIntervals
       toInterval = Right $ Interval quality size
-      invalid = Left $ T.pack $ "Invalid interval " <> show quality <> show size
+      invalid =
+        Left
+          $ T.pack
+          $ "Invalid interval " <> show quality <> show size <> "."
 
   case quality of
     Diminished ->
@@ -119,7 +133,9 @@ perfectIntervals :: Set.Set Size
 perfectIntervals =
   Set.fromList [ Size 1, Size 4, Size 5, Size 8 ]
 
-newtype HalfSteps = HalfSteps Word8
+-- | A number of half steps between two notes. Any operations that would result
+-- in a negative number of half steps will fail.
+newtype HalfSteps = HalfSteps Natural
   deriving newtype (Eq, Num, Ord, Show)
 
 instance Bounded HalfSteps where
@@ -157,10 +173,10 @@ validIntervalMap =
     , ( (Size 8, HalfSteps 12), per_8 )
     ]
 
--- This function attempts to build an interval using the following inputs:
---   - a Size, indicating letter name distance between the tonic and the chosen
--- interval to build.
---   - the desired HalfSteps up from the tonic
+-- | This function attempts to build an interval using the following inputs:
+-- - a Size, indicating letter name distance between the tonic and the chosen
+-- interval to build
+-- - the desired HalfSteps up from the tonic
 --
 -- With these two values, we attempt to create an interval that describes the
 -- desired gap. Because this has the possibility of failure, we return Either.
@@ -178,13 +194,13 @@ intervalFromHalfSteps size steps =
    in maybe (Left errorMessage) Right
         $ Map.lookup (size, steps) validIntervalMap
 
--- This function returns the number of half steps up from the tonic the interval
--- represents. It represents all possible valid intervals, but because the
--- Interval type *can* represent impossible intervals (even though this isn't
--- possible in practice because the smart constructor is the only exposed way to
--- build one), this pattern match is non-exhaustive.
---
--- TODO: Perhaps modify Interval to be less flexible?
+-- `intervalToHalfSteps` represents all possible valid intervals, but because
+-- the Interval type *can* represent impossible intervals (even though this
+-- isn't possible in practice because the smart constructor is the only exposed
+-- way to build one), this pattern match is non-exhaustive. Perhaps modify
+-- Interval to be less flexible?
+
+-- | The number of half steps up from the tonic the interval represents.
 intervalToHalfSteps :: Interval -> HalfSteps
 intervalToHalfSteps interval =
   case interval of
@@ -215,6 +231,7 @@ intervalToHalfSteps interval =
     Interval Diminished 8 -> HalfSteps 11
     Interval Perfect    8 -> HalfSteps 12
 
+-- | An interval Quality.
 data Quality
   = Diminished
   | Minor
@@ -233,6 +250,15 @@ instance Show Quality where
   show Major      = "M"
   show Augmented  = "A"
 
+qualityToText :: Quality -> T.Text
+qualityToText quality =
+  case quality of
+    Diminished -> "Diminished"
+    Minor      -> "Minor"
+    Perfect    -> "Perfect"
+    Major      -> "Major"
+    Augmented  -> "Augmented"
+
 newtype Size = Size Natural
   deriving newtype (Eq, Num, Ord, Show)
 
@@ -240,9 +266,12 @@ instance Bounded Size where
   minBound = 1
   maxBound = 8
 
+-- | Attempts to create an interval Size from a given Integral value. Intervals
+-- greater than one octave are reduced to their basic sizes (9 becomes 2, 13
+-- becomes 4, etc). Fails if given a number less than 1.
 mkIntervalSize :: Integral a => a -> Either T.Text Size
 mkIntervalSize num
-  | num == 0  = Left $ "Cannot make Interval of Size 0."
+  | num <= 0  = Left "Intervals must be at least Size 1."
   | num >= 9  = Right $ fromIntegral $ mod num 7
   | otherwise = Right $ fromIntegral num
 

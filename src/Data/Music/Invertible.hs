@@ -2,7 +2,7 @@ module Data.Music.Invertible
   ( Invertible(..)
   ) where
 
--- Invertible defines a music type that can be inverted - that is, it can be
+-- | Invertible defines a music type that can be inverted - that is, it can be
 -- reflected or "flipped" over some value.
 --
 -- For intervals, this is the note the interval is "comparing" itself against.

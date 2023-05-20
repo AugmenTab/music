@@ -1,6 +1,7 @@
 module Data.Music.Time
   ( Duration
   , mkDuration, fromDenominator
+  , durationToText
   , scaleDuration
   , dotted, triplet, toTriplet
   , whole, half, quarter, eighth, sixteenth
@@ -9,6 +10,7 @@ module Data.Music.Time
   , (.=)
   , tempoBeat
   , tempoBPM
+  , tempoToText
 
   , changeTempoBeat
   , changeTempoBPM
@@ -38,6 +40,7 @@ module Data.Music.Time
   , (./)
   , meterBeatCount
   , meterBeatDuration
+  , meterToText
   , cut, common
 
   , BeatCount
@@ -75,8 +78,12 @@ mkDuration = Duration
 -- "denominator" of the duration.
 --
 -- > fromDenominator 4 == Duration (1 % 4) == quarter
+--
 fromDenominator :: Natural -> Duration
 fromDenominator = Duration . (%) 1
+
+durationToText :: Duration -> T.Text
+durationToText = T.pack . show
 
 -- | Scales a Duration by the provided ratio.
 --
@@ -169,6 +176,9 @@ tempoBeat (Tempo duration _) = duration
 -- | The number of beats per minute in a Tempo.
 tempoBPM :: Tempo -> BPM
 tempoBPM (Tempo _ bpm) = bpm
+
+tempoToText :: Tempo -> T.Text
+tempoToText = T.pack . show
 
 -- | Modifies a given Tempo by changing the beat note to the provided Duration.
 changeTempoBeat :: Duration -> Tempo -> Tempo
@@ -302,6 +312,9 @@ meterBeatCount (Meter bc _) = bc
 -- signature.
 meterBeatDuration :: Meter -> Duration
 meterBeatDuration (Meter _ (BeatNote bn)) = Duration $ 1 % bn
+
+meterToText :: Meter -> T.Text
+meterToText = T.pack . show
 
 -- | 2/2 (𝄵) time.
 cut :: TimeSignature
