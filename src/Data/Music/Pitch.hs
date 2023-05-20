@@ -1,10 +1,6 @@
 module Data.Music.Pitch
-  ( Accidental(..)
-  , flatten, sharpen
-  , doubleFlat, flat, natural, sharp, doubleSharp
-
-  , Pitch(..)
-
+  ( Pitch(..)
+  , pitchToText
   , Tonic
   , Supertonic
   , Mediant
@@ -15,13 +11,28 @@ module Data.Music.Pitch
   , LeadingTone
 
   , PitchClass(..)
+  , pitchClassToText
+
+  , Accidental(..)
+  , accidentalSymbol, accidentalToText
+  , flatten, sharpen
+  , setAccidental, doubleFlat, flat, natural, sharp, doubleSharp
   ) where
 
 import           Flipstone.Prelude
 
 import qualified Data.List as L
+import qualified Data.Text as T
 import           Text.Show (Show(..))
 
+-- | A Pitch represents a musical note's letter value and accidental, without
+-- regard for what octave the note is in. It supports enharmonic equivalence.
+--
+-- > Pitch B Natural == Pitch C Flat
+-- > Pitch D NoAccidental == Pitch D Natural
+-- > Pitch G Natural == Pitch A DoubleFlat
+-- > Pitch F Sharp == Pitch E DoubleSharp
+--
 data Pitch = Pitch PitchClass Accidental
 
 instance Eq Pitch where
@@ -44,19 +55,38 @@ pitchToInt (Pitch pc a) =
     n | n < 0     -> 12 + n
       | otherwise -> n
 
--- These type synonyms are conveniences for using scale degree names.
-type Tonic       = Pitch
-type Supertonic  = Pitch
-type Mediant     = Pitch
-type Subdominant = Pitch
-type Dominant    = Pitch
-type Submediant  = Pitch
+pitchToText :: Pitch -> T.Text
+pitchToText = T.pack . show
 
--- TODO: I'm not exactly sure which of these to use if this gets expanded into
--- an ADT...
-type Subtonic    = Pitch
+-- These type synonyms are conveniences for using scale degree names.
+
+-- | Type synonym for referencing the first scale degree in a 7-note scale.
+type Tonic = Pitch
+
+-- | Type synonym for referencing the second scale degree in a 7-note scale.
+type Supertonic = Pitch
+
+-- | Type synonym for referencing the third scale degree in a 7-note scale.
+type Mediant = Pitch
+
+-- | Type synonym for referencing the fourth scale degree in a 7-note scale.
+type Subdominant = Pitch
+
+-- | Type synonym for referencing the fifth scale degree in a 7-note scale.
+type Dominant = Pitch
+
+-- | Type synonym for referencing the sixth scale degree in a 7-note scale.
+type Submediant = Pitch
+
+-- | Type synonym for referencing the seventh scale degree in a 7-note scale
+-- with a minor 7th, such as the natural minor scale.
+type Subtonic = Pitch
+
+-- | Type synonym for referencing the seventh scale degree in a 7-note scale
+-- with a major 7th.
 type LeadingTone = Pitch
 
+-- | Represents the letter value of a Pitch.
 data PitchClass
   = A
   | B
@@ -78,6 +108,19 @@ pitchClassToInt pc =
     F ->  8
     G -> 10
 
+pitchClassToText :: PitchClass -> T.Text
+pitchClassToText = T.pack . show
+
+-- | Represents the note's accidental - Sharp, Flat, Double Sharp, Double Flat,
+-- or none. This system makes a distinction between:
+--
+-- - Natural, which here is used for notes that would normally have an
+-- accidental in the given context (interval, scale, chord, etc.) but do not due
+-- to modifications or "playing outside."
+--
+-- - NoAccidental, which is used for notes that would not normally have an
+-- accidental in the given context, e.g. "C" in the C Major Scale.
+--
 data Accidental
   = DoubleFlat
   | Flat
@@ -103,6 +146,11 @@ instance Show Accidental where
   show Sharp       = "♯"
   show DoubleSharp = "𝄪"
 
+-- | Provides the accidental symbol as Text, or Nothing for @NoAccidental@.
+accidentalSymbol :: Accidental -> Maybe T.Text
+accidentalSymbol NoAccidental = Nothing
+accidentalSymbol accidental   = Just . T.pack $ show accidental
+
 accidentalToInt :: Accidental -> Int
 accidentalToInt accidental =
   case accidental of
@@ -113,9 +161,20 @@ accidentalToInt accidental =
     Sharp        -> 1
     DoubleSharp  -> 2
 
-{-| This flattens a provided pitch without changing its pitch class. It will
-   return the pitch unchanged if it is already double-flat.
--}
+-- | Provides a textual representation of the accidental as an English word -
+-- e.g. "Sharp", "Double Flat."
+accidentalToText :: Accidental -> T.Text
+accidentalToText accidental =
+  case accidental of
+    DoubleFlat   -> "Double Flat"
+    Flat         -> "Flat"
+    NoAccidental -> "No Accidental"
+    Natural      -> "Natural"
+    Sharp        -> "Sharp"
+    DoubleSharp  -> "Double Sharp"
+
+-- | This flattens a provided pitch without changing its pitch class. It will
+-- return the pitch unchanged if it is already double-flat.
 flatten :: Pitch -> Pitch
 flatten (Pitch pc acc) =
   case acc of
@@ -123,9 +182,8 @@ flatten (Pitch pc acc) =
     Natural    -> Pitch pc Flat
     _          -> Pitch pc $ toEnum $ fromEnum acc - 1
 
-{-| This sharpens a provided pitch without changing its pitch class. It will
-   return the pitch unchanged if it is already double-sharp.
--}
+-- | This sharpens a provided pitch without changing its pitch class. It will
+-- return the pitch unchanged if it is already double-sharp.
 sharpen :: Pitch -> Pitch
 sharpen (Pitch pc acc) =
   case acc of
@@ -133,17 +191,26 @@ sharpen (Pitch pc acc) =
     NoAccidental -> Pitch pc Sharp
     _            -> Pitch pc $ toEnum $ fromEnum acc + 1
 
+-- | Sets the accidental of a given Pitch.
+setAccidental :: Accidental -> Pitch -> Pitch
+setAccidental acc (Pitch pc _) = Pitch pc acc
+
+-- | Sets the accidental of a given Pitch to 'DoubleFlat'.
 doubleFlat :: Pitch -> Pitch
-doubleFlat (Pitch pc _) = Pitch pc DoubleFlat
+doubleFlat = setAccidental DoubleFlat
 
+-- | Sets the accidental of a given Pitch to 'Flat'.
 flat :: Pitch -> Pitch
-flat (Pitch pc _) = Pitch pc Flat
+flat = setAccidental Flat
 
+-- | Sets the accidental of a given Pitch to 'Natural'.
 natural :: Pitch -> Pitch
-natural (Pitch pc _) = Pitch pc Natural
+natural = setAccidental Natural
 
+-- | Sets the accidental of a given Pitch to 'Sharp'.
 sharp :: Pitch -> Pitch
-sharp (Pitch pc _) = Pitch pc Sharp
+sharp = setAccidental Sharp
 
+-- | Sets the accidental of a given Pitch to 'DoubleSharp'.
 doubleSharp :: Pitch -> Pitch
-doubleSharp (Pitch pc _) = Pitch pc DoubleSharp
+doubleSharp = setAccidental DoubleSharp
