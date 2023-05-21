@@ -5,6 +5,7 @@ module Data.Music.Interval
   , intervalFromHalfSteps
   , intervalToHalfSteps
   , intervalToText
+  , isTonic
 
   , Quality(..)
   , qualityToText
@@ -81,11 +82,9 @@ instance Invertible Interval where
 
 instance Ord Interval where
   compare interval1@(Interval q1 s1) interval2@(Interval q2 s2) =
-    mconcat
-      [ compare (intervalToHalfSteps interval1) (intervalToHalfSteps interval2)
-      , compare s1 s2
-      , compare q1 q2
-      ]
+    if interval1 == interval2
+       then EQ
+       else compare s1 s2 <> compare q1 q2
 
 instance Show Interval where
   show (Interval quality size) = show quality <> show size
@@ -128,6 +127,9 @@ mkInterval quality num = do
 
 intervalToText :: Interval -> T.Text
 intervalToText = T.pack . show
+
+isTonic :: Interval -> Bool
+isTonic interval = interval == unison || interval == octave
 
 perfectIntervals :: Set.Set Size
 perfectIntervals =

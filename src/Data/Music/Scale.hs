@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-incomplete-patterns #-}
 module Data.Music.Scale
   ( Scale
      ( Ditonic
@@ -27,6 +28,7 @@ import           Data.Music.Invertible (Invertible(..))
 import qualified Data.Foldable as F
 import qualified Data.FixedList as FL
 import qualified Data.List as L
+import           Data.List.NonEmpty (NonEmpty(..))
 import qualified Data.Set as Set
 import qualified Data.Text as T
 import           Text.Show (Show(..))
@@ -81,39 +83,32 @@ instance Show Scale where
 -- | Type synonym for using a mode.
 type Mode = Scale
 
--- | Attempts to build a Scale from a provided list of Intervals. Because Scales
--- are represented with the tonic as implicit, the list of Intervals provided
--- should be of a size 1 less than the desired Scale. So, to get the Major
--- scale, one would provide a list of six Intervals containing the Intervals
--- that build the 2nd through the 7th scale degrees.
---
--- Will fail if the provided list has 11 or more Intervals (the Chromatic scale
--- would have 11 Intervals, with the 12th being the implicit tonic).
---
-scaleFromIntervals :: [I.Interval] -> Either T.Text Scale
+-- | Attempts to build a Scale from a provided nonempty list of Intervals.
+-- Because Scales are represented with the tonic as implicit, the list of
+-- Intervals provided should be of a size 1 less than the desired Scale. So, to
+-- get the Major scale, one would provide a list of six Intervals containing the
+-- Intervals that build the 2nd through the 7th scale degrees.
+scaleFromIntervals :: NonEmpty I.Interval -> Scale
 scaleFromIntervals intervals =
-  -- TODO: There's no reason this should fail if using dedupeAndSort. The
-  -- problem here is the Ord instance for Interval does not remove equivalent
-  -- Intervals because they are ordered afterward based on their quality and
-  -- size The problem here is the Ord instance for Interval does not remove
-  -- equivalent Intervals because they are ordered after checking their half
-  -- steps based on their quality and size.
-  case L.length intervals of
-    1  -> Right . Ditonic     . FL.fromFoldable' $ dedupeAndSort intervals
-    2  -> Right . Tritonic    . FL.fromFoldable' $ dedupeAndSort intervals
-    3  -> Right . Tetratonic  . FL.fromFoldable' $ dedupeAndSort intervals
-    4  -> Right . Pentatonic  . FL.fromFoldable' $ dedupeAndSort intervals
-    5  -> Right . Hexatonic   . FL.fromFoldable' $ dedupeAndSort intervals
-    6  -> Right . Heptatonic  . FL.fromFoldable' $ dedupeAndSort intervals
-    7  -> Right . Octatonic   . FL.fromFoldable' $ dedupeAndSort intervals
-    8  -> Right . Nonatonic   . FL.fromFoldable' $ dedupeAndSort intervals
-    9  -> Right . Decatonic   . FL.fromFoldable' $ dedupeAndSort intervals
-    10 -> Right . Undecatonic . FL.fromFoldable' $ dedupeAndSort intervals
-    11 -> Right . Chromatic   . FL.fromFoldable' $ dedupeAndSort intervals
-    l  ->
-      Left
-        . T.pack
-        $ "Cannot build a scale from " <> show l <> " intervals."
+  -- This is an very loose pattern match, but we know there should be no way
+  -- (thanks to the  NonEmpty requirement for the Interval list and the deduping
+  -- of Intervals prior to building the Scale) for this to have more than 11
+  -- Intervals in it once it reaches the case expression. This makes it
+  -- technically unsafe if it were to ever try get more than 11 Intervals, but
+  -- that should never happen in practice so it should never fail.
+  let scale = dedupeAndSort $ toList intervals
+   in case length scale of
+        1  -> Ditonic     $ FL.fromFoldable' scale
+        2  -> Tritonic    $ FL.fromFoldable' scale
+        3  -> Tetratonic  $ FL.fromFoldable' scale
+        4  -> Pentatonic  $ FL.fromFoldable' scale
+        5  -> Hexatonic   $ FL.fromFoldable' scale
+        6  -> Heptatonic  $ FL.fromFoldable' scale
+        7  -> Octatonic   $ FL.fromFoldable' scale
+        8  -> Nonatonic   $ FL.fromFoldable' scale
+        9  -> Decatonic   $ FL.fromFoldable' scale
+        10 -> Undecatonic $ FL.fromFoldable' scale
+        _  -> Chromatic   $ FL.fromFoldable' scale
 
 -- | Unpacks a Scale into a list of its Intervals.
 scaleToIntervals :: Scale -> [I.Interval]
@@ -151,22 +146,25 @@ scaleToText scale =
         Undecatonic _ -> "Undecatonic " <> intervals
         Chromatic   _ -> "Chromatic "   <> intervals
 
--- | Attempts to add an Interval to a provided Scale. This will de-dupe the
--- Scale to remove equivalent intervals. Will fail if attempting to build a
--- Scale with 12 or more Intervals.
-addInterval :: I.Interval -> Scale -> Either T.Text Scale
+-- | Adds an Interval to a provided Scale. This will de-dupe the Scale to remove
+-- equivalent Intervals.
+addInterval :: I.Interval -> Scale -> Scale
 addInterval interval =
   scaleFromIntervals
+    . (I.unison :|)
     . dedupeAndSort
     . (:) interval
     . scaleToIntervals
 
--- | Merges two Scales together, effectively taking the union of the two. Will
--- fail if the resulting Scale has 12 or more Intervals.
-mergeScales :: Scale -> Scale -> Either T.Text Scale
-mergeScales scale1 scale2 = scaleFromIntervals $ scaleUnion scale1 scale2
+-- | Merges two Scales together, effectively taking the union of the two.
+mergeScales :: Scale -> Scale -> Scale
+mergeScales scale1 scale2 =
+  -- It's safe to use :| to build a NonEmpty here because dedupeAndSort will
+  -- strip out any tonic-equivalent notes.
+  scaleFromIntervals $ I.unison :| scaleUnion scale1 scale2
 
--- | Finds the Intervals that are not in common between two provided Scales.
+-- | Finds the Intervals in the first provided Scale that is not in common with
+-- the second provided Scale.
 scaleDifference :: Scale -> Scale -> [I.Interval]
 scaleDifference scale1 scale2 =
   Set.toAscList $ Set.difference (scaleSet scale1) (scaleSet scale2)
@@ -185,7 +183,7 @@ scaleUnion scale1 scale2 =
 -- Helpers
 --
 dedupeAndSort :: [I.Interval] -> [I.Interval]
-dedupeAndSort = Set.toAscList . Set.fromList
+dedupeAndSort = Set.toAscList . Set.fromList . L.filter (not . I.isTonic)
 
 scaleSet :: Scale -> Set.Set I.Interval
 scaleSet = Set.fromList . scaleToIntervals
