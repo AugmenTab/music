@@ -13,7 +13,7 @@ module Data.Music.Scale
      , Chromatic
      )
   , Mode
-  , scaleFromIntervals
+  , scaleFromIntervals, unsafeMakeScale
   , scaleToIntervals
   , scaleToText
   , addInterval
@@ -87,31 +87,17 @@ type Mode = Scale
 -- Major scale, one would provide a list of six Intervals containing the
 -- Intervals that build the 2nd through the 7th scale degrees.
 --
--- Will fail if the provided list has 11 or more Intervals (the Chromatic scale
--- would have 11 Intervals, with the 12th being the implicit tonic), or if the
--- provided list contains only tonic Intervals - that is, the unison or the
--- octave.
+-- Will fail if the provided list has 11 or more unique non-tonic Intervals (the
+-- Chromatic scale would have 11 Intervals, with the 12th being the implicit
+-- tonic), or if the provided list contains only tonic Intervals - that is, the
+-- unison or the octave.
 --
 scaleFromIntervals :: [I.Interval] -> Either T.Text Scale
 scaleFromIntervals intervals =
-  let scale = dedupeAndSort $ toList intervals
-   in case length scale of
-        1  -> Right . Ditonic     $ FL.fromFoldable' scale
-        2  -> Right . Tritonic    $ FL.fromFoldable' scale
-        3  -> Right . Tetratonic  $ FL.fromFoldable' scale
-        4  -> Right . Pentatonic  $ FL.fromFoldable' scale
-        5  -> Right . Hexatonic   $ FL.fromFoldable' scale
-        6  -> Right . Heptatonic  $ FL.fromFoldable' scale
-        7  -> Right . Octatonic   $ FL.fromFoldable' scale
-        8  -> Right . Nonatonic   $ FL.fromFoldable' scale
-        9  -> Right . Decatonic   $ FL.fromFoldable' scale
-        10 -> Right . Undecatonic $ FL.fromFoldable' scale
-        11 -> Right . Chromatic   $ FL.fromFoldable' scale
-        l  ->
-          Left
-            . T.pack
-            $ "Cannot build a scale from " <> show l <> " intervals."
-
+  case dedupeAndSort intervals of
+    []    -> Left  $ T.pack "Cannot build a scale from 0 non-tonic intervals."
+    scale -> Right $ unsafeMakeScale scale
+--
 -- | Unpacks a Scale into a list of its Intervals.
 scaleToIntervals :: Scale -> [I.Interval]
 scaleToIntervals (Ditonic     intervals) = F.toList intervals
@@ -125,6 +111,26 @@ scaleToIntervals (Nonatonic   intervals) = F.toList intervals
 scaleToIntervals (Decatonic   intervals) = F.toList intervals
 scaleToIntervals (Undecatonic intervals) = F.toList intervals
 scaleToIntervals (Chromatic   intervals) = F.toList intervals
+
+-- | Allows a user to build a `Scale` from a list of `Interval`s without
+-- verifying that it will build successfully based on size or content. This is
+-- intended for users that wish to build scales in an unsafe but educated way
+-- where they know it will succeed and are willing to deal with the possibility
+-- of failure on their own terms.
+unsafeMakeScale :: [I.Interval] -> Scale
+unsafeMakeScale intervals =
+  case length intervals of
+    1  -> Ditonic     $ FL.fromFoldable' intervals
+    2  -> Tritonic    $ FL.fromFoldable' intervals
+    3  -> Tetratonic  $ FL.fromFoldable' intervals
+    4  -> Pentatonic  $ FL.fromFoldable' intervals
+    5  -> Hexatonic   $ FL.fromFoldable' intervals
+    6  -> Heptatonic  $ FL.fromFoldable' intervals
+    7  -> Octatonic   $ FL.fromFoldable' intervals
+    8  -> Nonatonic   $ FL.fromFoldable' intervals
+    9  -> Decatonic   $ FL.fromFoldable' intervals
+    10 -> Undecatonic $ FL.fromFoldable' intervals
+    _  -> Chromatic   $ FL.fromFoldable' intervals
 
 scaleToText :: Scale -> T.Text
 scaleToText scale =
@@ -150,16 +156,14 @@ scaleToText scale =
 
 -- | Adds an Interval to a provided Scale. This will de-dupe the Scale to remove
 -- equivalent Intervals.
-addInterval :: I.Interval -> Scale -> Either T.Text Scale
+addInterval :: I.Interval -> Scale -> Scale
 addInterval interval =
-  scaleFromIntervals
-    . (:) interval
-    . scaleToIntervals
+  unsafeMakeScale . dedupeAndSort . (:) interval . scaleToIntervals
 
 -- | Merges two Scales together, effectively taking the union of the two.
-mergeScales :: Scale -> Scale -> Either T.Text Scale
+mergeScales :: Scale -> Scale -> Scale
 mergeScales scale1 scale2 =
-  scaleFromIntervals $ scaleUnion scale1 scale2
+  unsafeMakeScale $ scaleUnion scale1 scale2
 
 -- | Finds the Intervals in the first provided Scale that is not in common with
 -- the second provided Scale.
