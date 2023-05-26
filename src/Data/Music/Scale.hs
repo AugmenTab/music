@@ -162,8 +162,7 @@ addInterval interval =
 
 -- | Merges two Scales together, effectively taking the union of the two.
 mergeScales :: Scale -> Scale -> Scale
-mergeScales scale1 scale2 =
-  unsafeMakeScale $ scaleUnion scale1 scale2
+mergeScales scale1 scale2 = unsafeMakeScale $ scaleUnion scale1 scale2
 
 -- | Finds the Intervals in the first provided Scale that is not in common with
 -- the second provided Scale.

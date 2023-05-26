@@ -59,7 +59,7 @@ import           Text.Show (Show(..))
 -- represented as @1 % 4@, while a whole note is represented as @1 % 1@.
 --
 -- Basic arithmetic can be done on Durations - addition, subtraction,
--- multiplication, and division. Since Duration is based on a Ration of Natural,
+-- multiplication, and division. Since Duration is based on a Ratio of Natural,
 -- any operation that would result in a negative Duration will in the same
 -- manner that any operation that would result in a negative Natural would.
 newtype Duration = Duration (Ratio Natural)
